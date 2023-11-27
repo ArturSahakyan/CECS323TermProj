@@ -50,7 +50,7 @@ class Menu:
                 index += 1                      # Remember which option we're showing
                 print("%3d - %s" % (index, option.get_prompt()))
             try:                                # Protect from non-integer input
-                final = int(input('-->'))
+                final = int(input('--> '))
                 if final < 1 or final > n_options:  # Protect from out of range input
                     print("Choice is out of range, try again.")
                     results = False
