@@ -4,6 +4,12 @@ import certifi
 
 """ Just a class to keep things organized! """
 class ClientMgr:
+
+    """
+        Handles Connection to The Atlas Cloud Database
+        Owns the cluster link and client object
+    """
+
     def __init__(self):
         self.m_clusterLink: str = ""
         self.m_client = None
