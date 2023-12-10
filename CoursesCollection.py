@@ -53,6 +53,6 @@ class CoursesCollection(CollectionBase):
         # TO-DO: Handle population of department
         return []  # Return Empty Array Since a Return Value is Expected
 
-    def orphanCleanUp(self, doc):
+    def orphanCleanUp(self, doc) -> bool:
         # TO-DO: Handle cleanup of Sections to which this course belongs
-        pass  # No Return Value Expected :D
+        return True

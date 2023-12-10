@@ -101,5 +101,5 @@ class DepartmentsCollection(CollectionBase):
 
         return [("majors", maj_list)]
 
-    def orphanCleanUp(self, doc):
-        pass  # No Return Value Expected :D
+    def orphanCleanUp(self, doc) -> bool:
+        return True

@@ -4,8 +4,11 @@ from pprint import pprint
 # Local Imports
 from ClientMgr import ClientMgr
 from MenuDefs import menu_main, menu_add, menu_select, menu_list, menu_delete
-from CollectionBase import CollectionBase
+from CollManager import CollManager
 from DepartmentsCollection import DepartmentsCollection
+from StudentsCollection import StudentsCollection
+from CoursesCollection import CoursesCollection
+from SectionsCollection import SectionsCollection
 
 """ I like to keep my main file clean :p """
 
@@ -25,9 +28,11 @@ if __name__ == "__main__":
 
     # Setup DataBase and Collections
     db = clientMgr.client["Demonstration"]
-    collMgr = {
-        "departments": DepartmentsCollection(db),
-    }
+
+    CollManager.AddCollection("departments", DepartmentsCollection(db))
+    #CollManager.AddCollection("students", StudentsCollection(db))
+    #CollManager.AddCollection("courses", CoursesCollection(db))
+    #CollManager.AddCollection("sections", SectionsCollection(db))
 
     # Main Menu Loop
     exec_menu(menu_main)

@@ -55,5 +55,5 @@ class StudentsCollection(CollectionBase):
         # TO-DO: Handle validation of Sections array
         return [] # This will have stuff in it afterwards lol
 
-    def orphanCleanUp(self, doc):
-        pass  # No Return Value Expected :D
+    def orphanCleanUp(self, doc) -> bool:
+        return True

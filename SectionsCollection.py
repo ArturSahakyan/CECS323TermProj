@@ -81,5 +81,5 @@ class SectionsCollection(CollectionBase):
     def uniqueAttrAdds(self) -> List[Tuple[str, Any]]:
         return []  # Return Empty Array Since a Return Value is Expected
 
-    def orphanCleanUp(self, doc):
-        pass  # No Return Value Expected :D
+    def orphanCleanUp(self, doc) -> bool:
+        return True
