@@ -84,6 +84,7 @@ class CollectionBase(ABC):
 
                 # General Attributes to Add
                 for attr in self.attributes:
+                    print("")
                     match attr[1]:
                         case AttrType.STRING:
                             new_doc[attr[0]] = input(f"Requires:\n{str(self.schema['$jsonSchema']['properties'][attr[0]])}\nInput {attr[0]} --> ")

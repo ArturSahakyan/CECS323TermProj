@@ -48,6 +48,29 @@ class DepartmentsCollection(CollectionBase):
                         "minLength": 10,
                         "maxLength": 80,
                         "description": "Short to medium length text describing the department"
+                    },
+
+                    "majors": {
+                        "bsonType": "array",
+                        "items": {
+                            "bsonType": "object",
+                            "required": ["name", "description"],
+                            "properties": {
+                                "name": {
+                                    "bsonType": "string",
+                                    "minLength": 5,
+                                    "maxLength": 50,
+                                    "description": "Name of the major"
+                                },
+                                "description": {
+                                    "bsonType": "string",
+                                    "minLength": 10,
+                                    "maxLength": 80,
+                                    "description": "Description of the major"
+                                }
+                            }
+                        },
+                        "description": "List of majors offered by the department"
                     }
                 }
             }
@@ -55,11 +78,28 @@ class DepartmentsCollection(CollectionBase):
 
         self.attributes = [("building", AttrType.STRING), ("office", AttrType.INTEGER), ("name", AttrType.STRING),
                            ("abbreviation", AttrType.STRING), ("chair_name", AttrType.STRING),
-                           ("description", AttrType.STRING)]
+                           ("description", AttrType.STRING), ("majors", AttrType.FOREIGN)]
         self.uniqueCombos = [[2], [3], [4], [0, 1]]  # Candidate Keys
 
     def uniqueAttrAdds(self) -> List[Tuple[str, Any]]:
-        return []  # Return Empty Array Since a Return Value is Expected
+        maj_list = []
+
+        user_inp = ""
+        while user_inp != "n":
+            print("Do you want to add a major to this department? [y/n]")
+            user_inp = input("> ")
+
+            if user_inp == "y":
+                print("What's the name of the major?")
+                maj_name = input("> ")
+
+                print("\nWhat's the description of that major?")
+                maj_desc = input("> ")
+
+                maj_list.append({"name":maj_name, "description":maj_desc})
+                print("")
+
+        return [("majors", maj_list)]
 
     def orphanCleanUp(self, doc):
         pass  # No Return Value Expected :D
