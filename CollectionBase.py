@@ -86,11 +86,11 @@ class CollectionBase(ABC):
                 for attr in self.attributes:
                     match attr[1]:
                         case AttrType.STRING:
-                            new_doc[attr[0]] = input(f"Requires:\n{str(self.schema["$jsonSchema"]["properties"][attr[0]])}\nInput {attr[0]} --> ")
+                            new_doc[attr[0]] = input(f"Requires:\n{str(self.schema['$jsonSchema']['properties'][attr[0]])}\nInput {attr[0]} --> ")
                         case AttrType.INTEGER:
-                            new_doc[attr[0]] = int(input(f"Requires:\n{str(self.schema["$jsonSchema"]["properties"][attr[0]])}\nInput Integer {attr[0]} --> "))
+                            new_doc[attr[0]] = int(input(f"Requires:\n{str(self.schema['$jsonSchema']['properties'][attr[0]])}\nInput Integer {attr[0]} --> "))
                         case AttrType.TIME:
-                            hour = int(input(f"Requires:\n{str(self.schema["$jsonSchema"]["properties"][attr[0]])}\nInput Hour(Int 0-23) for {attr[0]} --> "))
+                            hour = int(input(f"Requires:\n{str(self.schema['$jsonSchema']['properties'][attr[0]])}\nInput Hour(Int 0-23) for {attr[0]} --> "))
                             minutes = int(input(f"Input Minutes(Int 0-59) for {attr[0]} --> "))
                             new_doc[attr[0]] = time(hour, minutes)
                         case _:
