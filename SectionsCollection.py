@@ -3,6 +3,7 @@ from CollectionBase import CollectionBase, AttrType
 from CollManager import CollManager
 
 
+
 class SectionsCollection(CollectionBase):
 
     def initCollection(self):

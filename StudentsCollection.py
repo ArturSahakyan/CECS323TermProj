@@ -2,6 +2,7 @@ from typing import List, Tuple, Any
 from CollectionBase import CollectionBase, AttrType
 from CollManager import CollManager
 
+
 class StudentsCollection(CollectionBase):
 
     def initCollection(self):
