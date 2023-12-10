@@ -40,7 +40,7 @@ class DepartmentsCollection(CollectionBase):
                     },
                     "chair_name": {
                         "bsonType": "string",
-                        "maxLength": 80,
+                        "maxLength":  80,
                         "description": "Name of the head of the department"
                     },
                     "description": {
