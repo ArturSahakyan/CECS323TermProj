@@ -103,16 +103,89 @@ class DepartmentsCollection(CollectionBase):
         return [("majors", maj_list)]
 
     def orphanCleanUp(self, doc) -> bool:
-        # takes an existing document (doc) and checks its children for integrity issues
-        # that would be caused by deleting the doc. Majors and Courses of concern here.
 
-        # Majors should probably be handled in its own method since it's a pseudo-collection.
+        students_coll = CollManager.GetCollection("students")
+        
+        course_coll = CollManager.GetCollection("courses")
+        courses_cnt = course_coll.count_documents({"department": ObjectID(doc["_id"])})
+        
+        if courses.cnt > 0:
+            print(f"{courses_cnt} courses belonging to this department must be deleted first.")
+            return False
+        
+        for major in doc["majors"]:
+            if(students_coll.count_documents({"majors.name": {"$in":[major["name"]]}}) > 0):  # I'm VERY iffy about this
+                print("There are majors that belong to this department.")
+                print("Delete these majors? The deleted Majors will also be removed")
+                print("from any students who have declared those Majors [y/n]")
+                user_inp = input("> ")
+                while user_inp != 'y' and user_inp != 'n':
+                    print("\nPlease Only Enter Either 'y' or 'n'")
+                    user_inp = input("> ")
+                print("")
 
-        # objectID field is probably the best way to do this
-
-        # we want to query with 'find', which needs to be passed an ObjectID-casted string
-
-        course_coll = CollManager.GetCollection()
-        related_courses = 
+                # Break Loop if User Doesn't Want to Try Again
+                if user_inp == 'n':
+                    return False
+            
+                else:
+                    for major in doc["majors"]:
+                        students_coll.update_many({"majors": {"$pull":[major["name"]]}})
         
         return True
+    
+    def addMajor(self):
+        print("Select a department to add the major to.")
+        doc = self.selectDoc()
+        
+        new_maj = {}
+
+        while(True):
+            while(True):
+                new_maj_name = input("Enter a name for the major --> ")
+                major_count = self.collection.count_documents({"majors": {"$in":[new_maj]}})
+                if(major_count > 0):
+                    print("A major with that name already exists. Try again.")
+                else:
+                    new_maj_desc = input("Enter a description for the major --> ")
+            
+            try:
+                new_maj[new_maj_name] = new_maj_desc
+                self.collection.update_one({"_id": ObjectID(doc["_id"])}, {'$push': new_maj})
+
+            except Exception as e:
+                print(f"\nError in {self.collName}: {str(e)}") # Print Error
+                new_maj = {}
+
+                # Ask to Try Again
+                print("Try Again? [y/n]")
+                user_inp = input("> ")
+                while user_inp != 'y' and user_inp != 'n':
+                    print("\nPlease Only Enter Either 'y' or 'n'")
+                    user_inp = input("> ")
+                print("")
+
+                # Break Loop if User Doesn't Want to Try Again
+                if user_inp == 'n':
+                    break
+            
+            break
+
+    def deleteMajor(self):
+        
+        students_coll = CollManager("stduents")
+        major_to_del = input("Name of the major to delete --> ")
+
+        num_declared = students_coll.count_documents({"majors.name": {"$in":[major_to_del]}})
+
+        if(num_declared > 0):  # I'm VERY iffy about this
+            print(f"There are {num_declared} students who have declared that major.")
+            print("Remove those major declarations before proceeding.")
+
+        
+        else:
+            students_coll.update_many({"majors": {"$pull":[major_to_del]}})
+
+
+    def listMajors():
+        pass

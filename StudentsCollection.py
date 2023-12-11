@@ -89,7 +89,7 @@ class StudentsCollection(CollectionBase):
                     new_maj_index = int(input("Input major name --> "))
                     if new_maj_index <= 0 or new_maj_index > len(valid_majors):
                         raise ValueError
-                except:
+                except Exception as e:
                     print("Invalid selection. Try again.")
                     continue
 
