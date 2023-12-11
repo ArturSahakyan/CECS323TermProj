@@ -146,14 +146,15 @@ class CollectionBase(ABC):
         print(f"We just deleted: {deleted.deleted_count} document(s).")
 
     @abstractmethod
-    def orphanCleanUp(self, doc):
-        """ Clean Up Any ToBe Orphans before doc gets deleted """
+    def orphanCleanUp(self, doc) -> bool:
+        """ Clean Up Any ToBe Orphans before doc gets deleted, returns either success or fail """
         pass
 
-    def listAll(self):
+    def listAll(self) -> List:
         doc_list = self.collection.find({})
         for doc in doc_list:
             pprint(doc)
+        return doc_list
 
     def selectDoc(self) -> {}:
         new_doc = None

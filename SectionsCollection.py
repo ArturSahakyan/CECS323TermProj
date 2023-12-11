@@ -1,5 +1,7 @@
 from typing import List, Tuple, Any
 from CollectionBase import CollectionBase, AttrType
+from CollManager import CollManager
+
 
 
 class SectionsCollection(CollectionBase):
@@ -81,5 +83,5 @@ class SectionsCollection(CollectionBase):
     def uniqueAttrAdds(self) -> List[Tuple[str, Any]]:
         return []  # Return Empty Array Since a Return Value is Expected
 
-    def orphanCleanUp(self, doc):
-        pass  # No Return Value Expected :D
+    def orphanCleanUp(self, doc) -> bool:
+        return True
