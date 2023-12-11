@@ -1,7 +1,7 @@
 from typing import List, Tuple, Any
 from CollectionBase import CollectionBase, AttrType
 from CollManager import CollManager
-
+from bson.objectid import ObjectId
 
 class DepartmentsCollection(CollectionBase):
 
@@ -103,4 +103,16 @@ class DepartmentsCollection(CollectionBase):
         return [("majors", maj_list)]
 
     def orphanCleanUp(self, doc) -> bool:
+        # takes an existing document (doc) and checks its children for integrity issues
+        # that would be caused by deleting the doc. Majors and Courses of concern here.
+
+        # Majors should probably be handled in its own method since it's a pseudo-collection.
+
+        # objectID field is probably the best way to do this
+
+        # we want to query with 'find', which needs to be passed an ObjectID-casted string
+
+        course_coll = CollManager.GetCollection()
+        related_courses = 
+        
         return True

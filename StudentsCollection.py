@@ -52,9 +52,77 @@ class StudentsCollection(CollectionBase):
         self.uniqueCombos = [[0,1], [2]]  # Candidate Keys
 
     def uniqueAttrAdds(self) -> List[Tuple[str, Any]]:
-        # TO-DO: Handle population of Majors array
-        # TO-DO: Handle validation of Sections array
-        return [] # This will have stuff in it afterwards lol
+        
+
+        # TO-DO: in theory we should handle possibility of no dept collection
+
+        ret_list = []
+
+        dept_collection = CollManager.GetCollection("departments")
+        dept_list = dept_collection.find({})
+        valid_majors_set = set()
+        for dept in dept_list:
+            for major in dept['majors']:
+                valid_majors.add(major['name'])
+        valid_majors = list(valid_majors_set)
+        major_set = set()
+
+        print(f"Requires:\n{str(self.schema['$jsonSchema']['properties']['majors'])}")
+        while(True):
+            print("Add a major? [y/n]")
+            y_n_input = input("> ")
+            while y_n_input != 'y' and y_n_input != 'n':
+                print("\nPlease only enter either 'y' or 'n'")
+                y_n_input = input("> ")
+            print("")
+
+            if y_n_input == 'n':
+                break
+
+            else:
+                print("Select a major to add:")
+                counter = 1
+                for maj in valid_majors:
+                    print(f"{counter}: {maj}")
+
+                try:
+                    new_maj_index = int(input("Input major name --> "))
+                    if new_maj_index <= 0 or new_maj_index > len(valid_majors):
+                        raise ValueError
+                except:
+                    print("Invalid selection. Try again.")
+                    continue
+
+                major_set.add(valid_majors[new_maj_index - 1])
+
+        major_list = list(major_set)
+        ret_list.append(("majors", major_list))
+
+        # TO-DO: in theory we should handle possibility of no sect collection
+
+        sect_collection = CollManager.GetCollection("sections")
+        sect_set = set()
+        while(True):
+            print("Add a section?")
+            y_n_input = input("> ")
+            while y_n_input != 'y' and y_n_input != 'n':
+                print("\nPlease only enter either 'y' or 'n'")
+                y_n_input = input("> ")
+            print("")
+
+            if y_n_input == 'n':
+                break
+
+            else:
+                doc = sect_collection.selectDoc()
+                if doc is not None:
+                    sect_set.add(doc["_id"])
+        sect_list = list(sect_set)
+        ret_list.append(("sections", sect_list))
+
+        return ret_list
+
+        return []
 
     def orphanCleanUp(self, doc) -> bool:
         return True
