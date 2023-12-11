@@ -104,7 +104,7 @@ class DepartmentsCollection(CollectionBase):
 
     def orphanCleanUp(self, doc) -> bool:
 
-        students_coll = CollManager.GetCollection("students")
+        # students_coll = CollManager.GetCollection("students")
         
         course_coll = CollManager.GetCollection("courses")
         courses_cnt = course_coll.count_documents({"department": ObjectID(doc["_id"])})
@@ -127,15 +127,15 @@ class DepartmentsCollection(CollectionBase):
                 # Break Loop if User Doesn't Want to Try Again
                 if user_inp == 'n':
                     return False
-            
+                """
                 else:
                     for major in doc["majors"]:
                         students_coll.update_many({"majors": {"$pull":[major["name"]]}})
-        
+                """
         return True
     
     def addMajor(self):
-        print("Select a department to add the major to.")
+        print("Select a department to add the major to.\n")
         doc = self.selectDoc()
         
         new_maj = {}
@@ -143,15 +143,20 @@ class DepartmentsCollection(CollectionBase):
         while(True):
             while(True):
                 new_maj_name = input("Enter a name for the major --> ")
-                major_count = self.collection.count_documents({"majors": {"$in":[new_maj]}})
+                major_count = self.collection.count_documents({"majors.name": {"$in":[new_maj_name]}})
                 if(major_count > 0):
-                    print("A major with that name already exists. Try again.")
+                    print("\nA major with that name already exists. Try again.\n")
                 else:
                     new_maj_desc = input("Enter a description for the major --> ")
+                    break
             
             try:
-                new_maj[new_maj_name] = new_maj_desc
-                self.collection.update_one({"_id": ObjectID(doc["_id"])}, {'$push': new_maj})
+                new_maj['name'] = new_maj_name
+                new_maj['description'] = new_maj_desc
+                doc_id = ObjectId(doc["_id"])
+                self.collection.update_one({"_id": doc_id}, {'$push': {'majors': new_maj}})
+                print(f"\n{new_maj_name} added to {doc['name']}")
+                return
 
             except Exception as e:
                 print(f"\nError in {self.collName}: {str(e)}") # Print Error
@@ -168,24 +173,37 @@ class DepartmentsCollection(CollectionBase):
                 # Break Loop if User Doesn't Want to Try Again
                 if user_inp == 'n':
                     break
-            
-            break
+
+                else:
+                    continue
 
     def deleteMajor(self):
         
-        students_coll = CollManager("stduents")
+        # students_coll = CollManager.GetCollection("students")
+
         major_to_del = input("Name of the major to delete --> ")
+        
+        if self.collection.count_documents({"majors.name": {"$in":[major_to_del]}}) == 0:
+            print("No majors with that name.")
+            return
+        """
+        num_declared = students_coll.count_documents({"majors.name": {"$in":[major_to_del]}}) # this feels fake
 
-        num_declared = students_coll.count_documents({"majors.name": {"$in":[major_to_del]}})
-
-        if(num_declared > 0):  # I'm VERY iffy about this
+        if(num_declared > 0):
             print(f"There are {num_declared} students who have declared that major.")
             print("Remove those major declarations before proceeding.")
-
         
-        else:
-            students_coll.update_many({"majors": {"$pull":[major_to_del]}})
+        # else:
+        """
+        self.collection.update_one({}, {"$pull": {"majors": {"name": {"$in":[major_to_del]}}}})
+        print(f"{major_to_del} deleted.")
 
-
-    def listMajors():
-        pass
+    def listMajors(self):
+        all_depts = self.collection.find({})
+        for dept in all_depts:
+            print(dept["name"])
+            print()
+            for major in dept["majors"]:
+                print(major["name"])
+                print(major["description"])
+                print()
