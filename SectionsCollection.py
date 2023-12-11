@@ -18,7 +18,7 @@ class SectionsCollection(CollectionBase):
                 "properties": {
                     "_id": {},
                     "course": {
-                        "bsonType": "ObjectID",
+                        "bsonType": "objectId",
                         "description": "The course to which a section belongs"
                     },
                     "section_number": {
@@ -62,7 +62,7 @@ class SectionsCollection(CollectionBase):
                     "students": {
                         "bsonType": "array",
                         "items": {
-                            "bsonType": "ObjectID"
+                            "bsonType": "objectId"
                         }
                     }
                 }

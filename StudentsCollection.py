@@ -39,7 +39,7 @@ class StudentsCollection(CollectionBase):
                     "sections": {
                         "bsonType": "array",
                         "items": {
-                            "bsonType": "ObjectID"
+                            "bsonType": "objectId"
                         }
                     }
                 }

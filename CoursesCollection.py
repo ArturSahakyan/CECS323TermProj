@@ -16,7 +16,7 @@ class CoursesCollection(CollectionBase):
                 "properties": {
                     "_id": {},
                     "department": {
-                        "bsonType": "ObjectID",
+                        "bsonType": "objectId",
                         "description": "The department to which a course belongs"
                     },
                     "course_number": {

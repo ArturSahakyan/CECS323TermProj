@@ -30,9 +30,9 @@ if __name__ == "__main__":
     db = clientMgr.client["Demonstration"]
 
     CollManager.AddCollection("departments", DepartmentsCollection(db))
-    #CollManager.AddCollection("students", StudentsCollection(db))
-    #CollManager.AddCollection("courses", CoursesCollection(db))
-    #CollManager.AddCollection("sections", SectionsCollection(db))
+    CollManager.AddCollection("students", StudentsCollection(db))
+    CollManager.AddCollection("courses", CoursesCollection(db))
+    CollManager.AddCollection("sections", SectionsCollection(db))
 
     # Main Menu Loop
     exec_menu(menu_main)
