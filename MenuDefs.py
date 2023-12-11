@@ -11,21 +11,21 @@ menu_main = Menu('main', 'Please select one of the following options:', [
 ])
 
 menu_add = Menu('add', 'Please Select Which Collection To Add To:', [
-    Option("Departments", "collMgr['departments'].addDoc()"),
+    Option("Departments", "CollManager.GetCollection('departments').addDoc()"),
     Option("Exit", "pass")
 ])
 
 menu_select = Menu('select', 'Please Select Which Collection to Select From:', [
-    Option("Departments", "pprint(collMgr['departments'].selectDoc())"),
+    Option("Departments", "pprint(CollManager.GetCollection('departments').selectDoc())"),
     Option("Exit", "pass")
 ])
 
 menu_list = Menu('list', 'Please Select Which Collection to List:', [
-    Option("Departments", "collMgr['departments'].listAll()"),
+    Option("Departments", "CollManager.GetCollection('departments').listAll()"),
     Option("Exit", "pass")
 ])
 
 menu_delete = Menu('delete', 'Please Select Which Collection to Delete From:', [
-    Option("Departments", "collMgr['departments'].deleteDoc()"),
+    Option("Departments", "CollManager.GetCollection('departments').deleteDoc()"),
     Option("Exit", "pass")
 ])

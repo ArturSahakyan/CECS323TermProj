@@ -1,5 +1,6 @@
 from typing import List, Tuple, Any
 from CollectionBase import CollectionBase, AttrType
+from CollManager import CollManager
 
 
 class DepartmentsCollection(CollectionBase):
@@ -101,5 +102,5 @@ class DepartmentsCollection(CollectionBase):
 
         return [("majors", maj_list)]
 
-    def orphanCleanUp(self, doc):
-        pass  # No Return Value Expected :D
+    def orphanCleanUp(self, doc) -> bool:
+        return True
