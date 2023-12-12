@@ -20,3 +20,15 @@ CREATING A FEATURE:
   8) Your feature is merged!
   9) git branch -d {insert_topic_here}_feat (Delete old feature branch locally)
   10) git push origin --delete {insert_topic_here}_feat (Deletes old feature branch remotely)
+
+INCOMPLETE FEATURES:
+- Students orphanCleanUp
+- Courses uniqueAttrAdds
+- Courses orphanCleanUp
+- Sections uniqueAttrAdds
+- Sections orphanCleanUp
+- Majors functionality (delete, list)
+- StudentMajors (declaration date, add, delete, list)
+  - Really this is just adding Update and List functionality to Student
+  - See Departments' Major methods
+- Enrollments functionality (add, delete, list)

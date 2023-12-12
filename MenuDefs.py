@@ -12,20 +12,31 @@ menu_main = Menu('main', 'Please select one of the following options:', [
 
 menu_add = Menu('add', 'Please Select Which Collection To Add To:', [
     Option("Departments", "CollManager.GetCollection('departments').addDoc()"),
+    Option("Majors", "CollManager.GetCollection('departments').addMajor()"),
+    Option("Students", "CollManager.GetCollection('students').addDoc()"),
+    Option("Courses", "CollManager.GetCollection('courses').addDoc()"),
     Option("Exit", "pass")
 ])
 
 menu_select = Menu('select', 'Please Select Which Collection to Select From:', [
     Option("Departments", "pprint(CollManager.GetCollection('departments').selectDoc())"),
+    Option("Students", "pprint(CollManager.GetCollection('students').selectDoc())"),
+    Option("Courses", "pprint(CollManager.GetCollection('courses').selectDoc())"),
     Option("Exit", "pass")
 ])
 
 menu_list = Menu('list', 'Please Select Which Collection to List:', [
     Option("Departments", "CollManager.GetCollection('departments').listAll()"),
+    Option("Majors", "CollManager.GetCollection('departments').listMajors()"),
+    Option("Students", "CollManager.GetCollection('students').listAll()"),
+    Option("Courses", "CollManager.GetCollection('courses').listAll()"),
     Option("Exit", "pass")
 ])
 
 menu_delete = Menu('delete', 'Please Select Which Collection to Delete From:', [
     Option("Departments", "CollManager.GetCollection('departments').deleteDoc()"),
+    Option("Majors", "CollManager.GetCollection('departments').deleteMajor()"),
+    Option("Students", "CollManager.GetCollection('students').deleteDoc()"),
+    Option("Courses', CollManager.GetCollection('courses').deleteDoc()"),
     Option("Exit", "pass")
 ])
