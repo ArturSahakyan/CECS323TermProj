@@ -72,6 +72,13 @@ class DepartmentsCollection(CollectionBase):
                             }
                         },
                         "description": "List of majors offered by the department"
+                    },
+
+                    "courses": {
+                        "bsonType": "array",
+                        "items": {
+                            "bsonType": "objectId"
+                        }
                     }
                 }
             }
@@ -79,7 +86,7 @@ class DepartmentsCollection(CollectionBase):
 
         self.attributes = [("building", AttrType.STRING), ("office", AttrType.INTEGER), ("name", AttrType.STRING),
                            ("abbreviation", AttrType.STRING), ("chair_name", AttrType.STRING),
-                           ("description", AttrType.STRING), ("majors", AttrType.FOREIGN)]
+                           ("description", AttrType.STRING), ("majors", AttrType.FOREIGN_ARR)]
         self.uniqueCombos = [[2], [3], [4], [0, 1]]  # Candidate Keys
 
     def uniqueAttrAdds(self) -> List[Tuple[str, Any]]:
@@ -103,9 +110,7 @@ class DepartmentsCollection(CollectionBase):
         return [("majors", maj_list)]
 
     def orphanCleanUp(self, doc) -> bool:
-
-        course_coll = CollManager.GetCollection("courses").collection
-        courses_cnt = course_coll.count_documents({"department": ObjectId(doc["_id"])})
+        courses_cnt = len(doc["courses"])
         students_coll = CollManager.GetCollection("students").collection
 
         if courses_cnt > 0:
@@ -133,6 +138,10 @@ class DepartmentsCollection(CollectionBase):
                 """
         return True
 
+    def onValidInsert(self, doc_id):
+        pass
+
+    """*********** Majors Functionality ****************"""
     def addMajor(self):
         print("Select a department to add the major to.\n")
         doc = self.selectDoc()
@@ -206,3 +215,24 @@ class DepartmentsCollection(CollectionBase):
                 print(major["name"])
                 print(major["description"])
                 print()
+
+    """************ Courses Functionality f_ for friend method (Friend to Course) ******************"""
+    def f_appendCourse(self, dept_id, course_id) -> bool:  # Return False to Abort Adding course to main collection
+        try:
+            self.collection.update_one({"_id": dept_id}, {"$push": {"courses": course_id}})
+        except Exception as e:
+            print(f"\nError in {self.collName}: {str(e)}")
+            print("\n\nFailed to append course to department!\n")
+            return False
+
+        return True
+
+    def f_removeCourse(self, dept_id, course_id) -> bool:  # Return False to Abort Removal of Course from Main Collection
+        try:
+            self.collection.update_one({"_id": dept_id}, {"$pull": {"courses": course_id}})
+        except Exception as e:
+            print(f"\nError in {self.collName}: {str(e)}")
+            print("\n\nFailed to delete course from department!\n")
+            return False
+
+        return True

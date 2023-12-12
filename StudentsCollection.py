@@ -47,8 +47,8 @@ class StudentsCollection(CollectionBase):
         }
 
         self.attributes = [("last_name", AttrType.STRING), ("first_name", AttrType.STRING),
-                            ("email", AttrType.STRING), ("majors", AttrType.FOREIGN),
-                            ("sections", AttrType.FOREIGN)]
+                            ("email", AttrType.STRING), ("majors", AttrType.FOREIGN_ARR),
+                            ("sections", AttrType.FOREIGN_ARR)]
         self.uniqueCombos = [[0,1], [2]]  # Candidate Keys
 
     def uniqueAttrAdds(self) -> List[Tuple[str, Any]]:
@@ -124,3 +124,6 @@ class StudentsCollection(CollectionBase):
 
     def orphanCleanUp(self, doc) -> bool:
         return True
+
+    def onValidInsert(self, doc_id):
+        pass

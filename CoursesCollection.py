@@ -45,15 +45,24 @@ class CoursesCollection(CollectionBase):
             }
         }
 
-        self.attributes = [("department", AttrType.FOREIGN), ("course_number", AttrType.INTEGER),
-                            ("course_name", AttrType.STRING), ("description", AttrType.STRING),
-                            ("units", AttrType.INTEGER)]
-        self.uniqueCombos = [[0,1],[0,2]]  # Candidate Keys
+        self.attributes = [("department", AttrType.FOREIGN_DEPT), ("course_number", AttrType.INTEGER),
+                           ("course_name", AttrType.STRING), ("description", AttrType.STRING),
+                           ("units", AttrType.INTEGER)]
+        self.uniqueCombos = [[0, 1], [0, 2]]  # Candidate Keys
 
     def uniqueAttrAdds(self) -> List[Tuple[str, Any]]:
-        # TO-DO: Handle population of department
-        return []  # Return Empty Array Since a Return Value is Expected
+        return []
 
     def orphanCleanUp(self, doc) -> bool:
+        # Clean Up From Departments
+        CollManager.GetCollection("departments").f_removeCourse(doc["department"], doc["_id"])
+
         # TO-DO: Handle cleanup of Sections to which this course belongs
         return True
+
+    def onValidInsert(self, doc_id):
+        dept_id = self.collection.find_one({"_id": doc_id})["department"]
+
+        success = CollManager.GetCollection("departments").f_appendCourse(dept_id, doc_id)
+        if not success:
+            self.collection.delete_one({"_id": doc_id})

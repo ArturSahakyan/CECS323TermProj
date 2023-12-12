@@ -5,13 +5,16 @@ from enum import Enum
 from datetime import time
 from typing import Tuple, Any, List
 
+from CollManager import CollManager
 
 class AttrType(Enum):
     STRING = 1
     INTEGER = 2
     TIME = 3
-    FOREIGN = 4
+    FOREIGN_ARR = 4
 
+    FOREIGN_DEPT = "departments"
+    FOREIGN_COURSE = "courses"
 
 class CollectionBase(ABC):
 
@@ -36,7 +39,7 @@ class CollectionBase(ABC):
     def __init__(self, db):
         # Collection
         self.m_collName = "Invalid Collection"  # REASSIGN IN CHILD !!!
-        self.collection = None
+        self.m_collection = None
         self.m_db = db
 
         # Collection Attributes (REASSIGN ALL OF THESE IN CHILD !!!)
@@ -77,6 +80,7 @@ class CollectionBase(ABC):
 
     def addDoc(self):
         successful: bool = False
+        new_doc_id = None
 
         while not successful:
             try:
@@ -95,8 +99,16 @@ class CollectionBase(ABC):
                             minutes = int(input(f"Input Minutes(Int 0-59) for {attr[0]} --> "))
                             new_doc[attr[0]] = time(hour, minutes)
                         case _:
-                            """ Default Match Case """
-                            pass
+                            # Error checking
+                            if not isinstance(attr[1], AttrType):
+                                print("\nPlease make sure you are using the AttrType enumeration when creating attributes!!")
+                                return
+
+                            if attr[1] == AttrType.FOREIGN_ARR:
+                                continue
+
+                            print(f"We will need values from {attr[1].value}")
+                            new_doc[attr[0]] = CollManager.GetCollection(attr[1].value).selectDoc()["_id"]
 
                 # Handle Any ForeignKeys/Relationships
                 new_attrs = self.uniqueAttrAdds()
@@ -104,7 +116,7 @@ class CollectionBase(ABC):
                     for attr in new_attrs:
                         new_doc[attr[0]] = attr[1]
 
-                self.collection.insert_one(new_doc)
+                new_doc_id = self.collection.insert_one(new_doc).inserted_id
 
             except Exception as e:
                 print(f"\nError in {self.collName}: {str(e)}") # Print Error
@@ -124,11 +136,16 @@ class CollectionBase(ABC):
                 continue # Start Back From Top
 
             successful = True
+        self.onValidInsert(new_doc_id)
 
     # Implement this function to add in foreign keys or create relationships
     @abstractmethod
     def uniqueAttrAdds(self) -> List[Tuple[str, Any]]:
         """ Add Any Attributes That Require Selects (i.e. Foreign Keys) """
+        pass
+
+    @abstractmethod
+    def onValidInsert(self, doc_id):
         pass
 
     def deleteDoc(self):
@@ -199,6 +216,20 @@ class CollectionBase(ABC):
                         hour = int(input(f"Input Hour(Int 0-23) for {attr[0]} --> "))
                         minutes = int(input(f"Input Minutes(Int 0-59) for {attr[0]} --> "))
                         doc_filter[attr[0]] = time(hour, minutes)
+                    case _:
+                        # Error checking
+                        if not isinstance(attr[1], AttrType):
+                            print(
+                                "\nPlease make sure you are using the AttrType enumeration when creating attributes!!")
+                            return
+
+                        # Grab Foreign Key!
+                        if attr[1] == AttrType.FOREIGN_ARR:
+                            print("\nThis application is not prepared to handle selecting using arrays!")
+                            continue
+
+                        print(f"We will need values from {attr[1].value}")
+                        doc_filter[attr[0]] = CollManager.GetCollection(attr[1].value).selectDoc()["_id"]
 
             # Attempt Selection
             if self.collection.count_documents(doc_filter) != 0:
@@ -242,3 +273,13 @@ class CollectionBase(ABC):
         """ Setter for collName; Regens self.collection """
         self.m_collName = val
         self.collection = self.db[self.m_collName]
+
+    @property
+    def collection(self):
+        """ Getter for PyMongo Collection; For Unique Use Cases"""
+        return self.m_collection
+
+    @collection.setter
+    def collection(self, val):
+        """ Setter for PyMongo Collection; Should Never Be Used Except in setupCollection """
+        self.m_collection = val
