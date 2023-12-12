@@ -55,9 +55,17 @@ class CoursesCollection(CollectionBase):
 
     def orphanCleanUp(self, doc) -> bool:
         # Clean Up From Departments
-        CollManager.GetCollection("departments").f_removeCourse(doc["department"], doc["_id"])
+        success = CollManager.GetCollection("departments").f_removeCourse(doc["department"], doc["_id"])
+        if not success:
+            return False
 
-        # TO-DO: Handle cleanup of Sections to which this course belongs
+        sect_coll = CollManager.GetCollection("sections")
+        sect_cnt = sect_coll.collection.count_documents({"course": doc["_id"]})
+        if sect_cnt > 0:
+            print(f"\n{sect_cnt} sections still exist for this course!")
+            print("Please delete those first!")
+            return False
+
         return True
 
     def onValidInsert(self, doc_id):

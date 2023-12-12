@@ -3,7 +3,6 @@ from CollectionBase import CollectionBase, AttrType
 from CollManager import CollManager
 
 
-
 class SectionsCollection(CollectionBase):
 
     def initCollection(self):
@@ -12,8 +11,8 @@ class SectionsCollection(CollectionBase):
         self.schema = {
             "$jsonSchema": {
                 "bsonType": "object",
-                "required": ["course", "section_number", "semester", "section_year", 
-                            "building", "room", "schedule", "start_time", "instructor"],
+                "required": ["course", "section_number", "semester", "section_year",
+                             "building", "room", "schedule", "start_time", "instructor"],
                 "additionalProperties": False,
                 "properties": {
                     "_id": {},
@@ -32,7 +31,7 @@ class SectionsCollection(CollectionBase):
                     },
                     "section_year": {
                         "bsonType": "number",
-                        "minimum": 1636 # When Harvard, which claims to be the oldest U.S. college, was founded
+                        "minimum": 1636  # When Harvard, which claims to be the oldest U.S. college, was founded
                     },
                     "building": {
                         "enum": ['ANAC', 'CDC', 'DC', 'ECS', 'EN2', 'EN3', 'EN4', 'EN5', 'ET', 'HSCI', 'NUR', 'VEC'],
@@ -70,11 +69,11 @@ class SectionsCollection(CollectionBase):
         }
 
         self.attributes = [("course", AttrType.FOREIGN_COURSE), ("section_number", AttrType.INTEGER),
-                            ("semester", AttrType.STRING), ("section_year", AttrType.INTEGER),
-                            ("building", AttrType.STRING), ("room", AttrType.INTEGER),
-                            ("schedule", AttrType.STRING), ("start_time", AttrType.INTEGER),
-                            ("instructor", AttrType.STRING)]
-        self.uniqueCombos = [[0,1,2,3],[2,3,4,5,6,7],[2,3,6,7,8]]  # Candidate Keys
+                           ("semester", AttrType.STRING), ("section_year", AttrType.INTEGER),
+                           ("building", AttrType.STRING), ("room", AttrType.INTEGER),
+                           ("schedule", AttrType.STRING), ("start_time", AttrType.INTEGER),
+                           ("instructor", AttrType.STRING)]
+        self.uniqueCombos = [[0, 1, 2, 3], [2, 3, 4, 5, 6, 7], [2, 3, 6, 7, 8]]  # Candidate Keys
         # TO-DO: semester, section_year, department_abbreviation, course_number, student_id
         # should also be a uniqueness constraint, but as of the time of writing this, we do
         # not have a way to access Department or Student. I don't know that it necessarily needs
@@ -84,7 +83,34 @@ class SectionsCollection(CollectionBase):
         return []  # Return Empty Array Since a Return Value is Expected
 
     def orphanCleanUp(self, doc) -> bool:
+        students_cnt = len(doc["students"])
+        if students_cnt > 0:
+            print(f"{students_cnt} students are still in this section! Please delete those first!")
+            return False
+
         return True
 
     def onValidInsert(self, doc_id):
         pass
+
+    """************ Students Functionality f_ for friend method (Student to Course) ******************"""
+
+    def f_appendStudent(self, sect_id, student_id) -> bool:  # Return False to Abort Adding course to main collection
+        try:
+            self.collection.update_one({"_id": sect_id}, {"$push": {"students": student_id}})
+        except Exception as e:
+            print(f"\nError in {self.collName}: {str(e)}")
+            print("\n\nFailed to append student to section!\n")
+            return False
+
+        return True
+
+    def f_removeStudent(self, sect_id, student_id) -> bool:  # Return False to Abort Removal of Course from Main Collection
+        try:
+            self.collection.update_one({"_id": sect_id}, {"$pull": {"students": student_id}})
+        except Exception as e:
+            print(f"\nError in {self.collName}: {str(e)}")
+            print("\n\nFailed to delete student from section!\n")
+            return False
+
+        return True
