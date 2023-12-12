@@ -28,6 +28,7 @@ INCOMPLETE FEATURES:
 - Sections uniqueAttrAdds
 - Sections orphanCleanUp
 - Majors functionality (delete, list)
+- Department orphanDelete doesn't warn of deleting child Majors
 - StudentMajors (declaration date, add, delete, list)
   - Really this is just adding Update and List functionality to Student
   - See Departments' Major methods
