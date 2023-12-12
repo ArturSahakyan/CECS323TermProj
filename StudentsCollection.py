@@ -1,7 +1,9 @@
 from typing import List, Tuple, Any
 from CollectionBase import CollectionBase, AttrType
+from SectionsCollection import SectionsCollection
 from CollManager import CollManager
-
+from datetime import datetime
+from bson.objectid import ObjectId
 
 class StudentsCollection(CollectionBase):
 
@@ -11,7 +13,7 @@ class StudentsCollection(CollectionBase):
         self.schema = {
             "$jsonSchema": {
                 "bsonType": "object",
-                "required": ["last_name", "first_name", "email", "major"],
+                "required": ["last_name", "first_name", "email", "majors"],
                 "additionalProperties": False,
                 "properties": {
                     "_id": {},
@@ -33,13 +35,28 @@ class StudentsCollection(CollectionBase):
                     "majors": {
                         "bsonType": "array",
                         "items": {
-                            "bsonType": "string"
-                        }
+                            "bsonType": "object",
+                            "required": ["name", "declaration_date"],
+                            "properties": {
+                                "name": {
+                                    "bsonType": "string",
+                                    "minLength": 5,
+                                    "maxLength": 50,
+                                    "description": "Name of the major"
+                                },
+                                "declaration_date": {
+                                    "bsonType": "date",
+                                    "description": "The calendar day on which the student joined the major"
+                                }
+                            }
+                        },
+                        "description": "List of majors offered by the department"
                     },
                     "sections": {
                         "bsonType": "array",
                         "items": {
-                            "bsonType": "objectId"
+                            "bsonType": "objectId",
+                            "description": "The course offering that a student has enrolled in"
                         }
                     }
                 }
@@ -53,22 +70,24 @@ class StudentsCollection(CollectionBase):
 
     def uniqueAttrAdds(self) -> List[Tuple[str, Any]]:
         
-
         # TO-DO: in theory we should handle possibility of no dept collection
-
+        
         ret_list = []
-
-        dept_collection = CollManager.GetCollection("departments")
-        dept_list = dept_collection.find({})
-        valid_majors_set = set()
-        for dept in dept_list:
+        
+        all_depts = CollManager.GetCollection("departments").collection.find({})
+        valid_majors = []
+        for dept in all_depts:
             for major in dept['majors']:
-                valid_majors_set.add(major['name'])
-        valid_majors = list(valid_majors_set)
-        major_set = set()
+                valid_majors.append(major['name'])
 
-        print(f"Requires:\n{str(self.schema['$jsonSchema']['properties']['majors'])}")
+        majors = []
+        seen = set()
+        
         while(True):
+            dec_year = 0
+            dec_month = 0
+            dec_day = 0
+
             print("Add a major? [y/n]")
             y_n_input = input("> ")
             while y_n_input != 'y' and y_n_input != 'n':
@@ -81,26 +100,40 @@ class StudentsCollection(CollectionBase):
 
             else:
                 print("Select a major to add:")
-                counter = 1
-                for maj in valid_majors:
-                    print(f"{counter}: {maj}")
+                for number, major in enumerate(valid_majors):
+                    print(number + 1, major)
+                print()
 
                 try:
-                    new_maj_index = int(input("Input major name --> "))
+                    new_maj_index = int(input("Selection --> "))
+                    print()
                     if new_maj_index <= 0 or new_maj_index > len(valid_majors):
                         raise ValueError
-                except Exception as e:
-                    print("Invalid selection. Try again.")
+                    if valid_majors[new_maj_index - 1] in seen:
+                        print("Student already has that major. Try again.\n")
+                        continue
+                except:
+                    print("Invalid selection. Try again.\n")
                     continue
+                
+                while(True):
+                    try:
+                        dec_year = int(input("Declaration year --> "))
+                        dec_month = int(input("Declaration month (digit) --> "))
+                        dec_day = int(input("Declaration day (digit) --> "))
+                        print()
+                        dec_date = datetime(dec_year, dec_month, dec_day)
+                        break
+                    except:
+                        print("Invalid entry. Try again.")
 
-                major_set.add(valid_majors[new_maj_index - 1])
+                seen.add(valid_majors[new_maj_index - 1])
+                majors.append({'name': valid_majors[new_maj_index - 1], 'declaration_date': dec_date})
 
-        major_list = list(major_set)
-        ret_list.append(("majors", major_list))
+        ret_list.append(("majors", majors))
 
         # TO-DO: in theory we should handle possibility of no sect collection
 
-        sect_collection = CollManager.GetCollection("sections")
         sect_set = set()
         while(True):
             print("Add a section?")
@@ -114,16 +147,17 @@ class StudentsCollection(CollectionBase):
                 break
 
             else:
-                doc = sect_collection.selectDoc()
+                doc = collManager.getCollection("sections").selectDoc()
                 if doc is not None:
-                    sect_set.add(doc["_id"])
+                    sect_set.add(ObjectId(doc["_id"]))
+        
         sect_list = list(sect_set)
         ret_list.append(("sections", sect_list))
 
         return ret_list
 
-    def orphanCleanUp(self, doc) -> bool:
-        return True
+    def orphanCleanUp(self, doc):
+        pass  # No Return Value Expected :D
 
     def onValidInsert(self, doc_id):
         pass
