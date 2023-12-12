@@ -147,7 +147,7 @@ class StudentsCollection(CollectionBase):
                 break
 
             else:
-                doc = collManager.getCollection("sections").selectDoc()
+                doc = CollManager.GetCollection("sections").selectDoc()
                 if doc is not None:
                     sect_set.add(ObjectId(doc["_id"]))
         
@@ -156,8 +156,8 @@ class StudentsCollection(CollectionBase):
 
         return ret_list
 
-    def orphanCleanUp(self, doc):
-        pass  # No Return Value Expected :D
+    def orphanCleanUp(self, doc) -> bool:
+        return True
 
     def onValidInsert(self, doc_id):
         pass
