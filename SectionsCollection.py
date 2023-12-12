@@ -69,7 +69,7 @@ class SectionsCollection(CollectionBase):
             }
         }
 
-        self.attributes = [("course", AttrType.FOREIGN), ("section_number", AttrType.INTEGER),
+        self.attributes = [("course", AttrType.FOREIGN_COURSE), ("section_number", AttrType.INTEGER),
                             ("semester", AttrType.STRING), ("section_year", AttrType.INTEGER),
                             ("building", AttrType.STRING), ("room", AttrType.INTEGER),
                             ("schedule", AttrType.STRING), ("start_time", AttrType.INTEGER),
@@ -85,3 +85,6 @@ class SectionsCollection(CollectionBase):
 
     def orphanCleanUp(self, doc) -> bool:
         return True
+
+    def onValidInsert(self, doc_id):
+        pass
