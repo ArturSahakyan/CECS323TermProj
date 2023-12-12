@@ -5,6 +5,7 @@ from CollManager import CollManager
 from datetime import datetime
 from bson.objectid import ObjectId
 
+
 class StudentsCollection(CollectionBase):
 
     def initCollection(self):
@@ -55,8 +56,23 @@ class StudentsCollection(CollectionBase):
                     "sections": {
                         "bsonType": "array",
                         "items": {
-                            "bsonType": "objectId",
-                            "description": "The course offering that a student has enrolled in"
+                            "bsonType": "object",
+                            "required": ["section_id", "enrollment"],
+                            "properties": {
+                                "section_id": {
+                                    "bsonType": "string",
+                                    "minLength": 5,
+                                    "maxLength": 50,
+                                    "description": "Name of the major"
+                                },
+
+                                "enrollment": {
+                                    "oneOf": [
+                                        { "bsonType": "date", "description": "PassFail: applicationDate" },
+                                        { "bsonType": "string", "enum": ["A", "B", "C"], "description": "LetterGrade: minSatisfactory" }
+                                    ]
+                                }
+                            }
                         }
                     }
                 }
@@ -64,16 +80,25 @@ class StudentsCollection(CollectionBase):
         }
 
         self.attributes = [("last_name", AttrType.STRING), ("first_name", AttrType.STRING),
-                            ("email", AttrType.STRING), ("majors", AttrType.FOREIGN_ARR),
-                            ("sections", AttrType.FOREIGN_ARR)]
-        self.uniqueCombos = [[0,1], [2]]  # Candidate Keys
+                           ("email", AttrType.STRING), ("majors", AttrType.FOREIGN_ARR),
+                           ("sections", AttrType.FOREIGN_ARR)]
+        self.uniqueCombos = [[0, 1], [2]]  # Candidate Keys
 
     def uniqueAttrAdds(self) -> List[Tuple[str, Any]]:
-        
-        # TO-DO: in theory we should handle possibility of no dept collection
-        
-        ret_list = []
-        
+        return []
+
+    def orphanCleanUp(self, doc) -> bool:
+        return True
+
+    def onValidInsert(self, doc_id):
+        pass
+
+    """ ************ StudentMajor Functionality ***************** """
+    def addMajor(self):
+        print("Select a Student to Add a Major to!")
+        student = self.selectDoc()
+
+        # Get List of Valid Majors
         all_depts = CollManager.GetCollection("departments").collection.find({})
         valid_majors = []
         for dept in all_depts:
@@ -82,13 +107,39 @@ class StudentsCollection(CollectionBase):
 
         majors = []
         seen = set()
-        
-        while(True):
-            dec_year = 0
-            dec_month = 0
-            dec_day = 0
 
-            print("Add a major? [y/n]")
+        while True:
+            print("Please Select a Major")
+            maj_name = input("Name --> ")
+            while maj_name not in valid_majors:
+                print("Sorry! That's not a valid major!\nTry Again\n\n")
+                maj_name = input("Name --> ")
+
+            if maj_name in seen:
+                print("Sorry, you've added this before!\nTry Again\n\n")
+                continue
+
+            dec_date = None
+            while True:
+                try:
+                    dec_year = int(input("Declaration year --> "))
+                    dec_month = int(input("Declaration month (digit) --> "))
+                    dec_day = int(input("Declaration day (digit) --> "))
+                    print()
+                    dec_date = datetime(dec_year, dec_month, dec_day)
+                    break
+                except:
+                    print("Invalid entry. Try again.\n")
+
+            seen.add(maj_name)
+
+            try:
+                self.collection.update_one({"_id": student["_id"]}, {'$push': {'majors': {"name": maj_name, "declaration_date": dec_date}}})
+            except Exception as e:
+                print(f"\nError in {self.collName}: {str(e)}")
+                print("Failed to add StudentMajor\n")
+
+            print("Add a major?")
             y_n_input = input("> ")
             while y_n_input != 'y' and y_n_input != 'n':
                 print("\nPlease only enter either 'y' or 'n'")
@@ -98,44 +149,62 @@ class StudentsCollection(CollectionBase):
             if y_n_input == 'n':
                 break
 
-            else:
-                print("Select a major to add:")
-                for number, major in enumerate(valid_majors):
-                    print(number + 1, major)
-                print()
+    def deleteMajor(self):
+        print("Select a student to delete a major from")
+        student = self.selectDoc()
+        if student is None:
+            return
 
-                try:
-                    new_maj_index = int(input("Selection --> "))
-                    print()
-                    if new_maj_index <= 0 or new_maj_index > len(valid_majors):
-                        raise ValueError
-                    if valid_majors[new_maj_index - 1] in seen:
-                        print("Student already has that major. Try again.\n")
-                        continue
-                except:
-                    print("Invalid selection. Try again.\n")
-                    continue
-                
-                while(True):
-                    try:
-                        dec_year = int(input("Declaration year --> "))
-                        dec_month = int(input("Declaration month (digit) --> "))
-                        dec_day = int(input("Declaration day (digit) --> "))
-                        print()
-                        dec_date = datetime(dec_year, dec_month, dec_day)
-                        break
-                    except:
-                        print("Invalid entry. Try again.")
+        valid_maj = []
+        print("Which major do you want to delete?")
+        for majors in student["majors"]:
+            valid_maj.append(majors["name"])
+            print(majors["name"])
 
-                seen.add(valid_majors[new_maj_index - 1])
-                majors.append({'name': valid_majors[new_maj_index - 1], 'declaration_date': dec_date})
+        maj_name = input("Major Name --> ")
+        while maj_name not in valid_maj:
+            print("That's not a valid major!\nTry Again\n\n")
+            maj_name = input("Major Name --> ")
 
-        ret_list.append(("majors", majors))
+        try:
+            self.collection.update_one({}, {"$pull": {"majors": {"name": {"$in": [maj_name]}}}})
+        except Exception as e:
+            print(f"\nError in {self.collName}: {str(e)}")
+            print("Failed to remove major from student")
 
-        # TO-DO: in theory we should handle possibility of no sect collection
+    """ ****************** Enrollment Functionality ************************* """
+    def addEnrollment(self):
+        while (True):
+            # Get Student
+            print("Which Student Do You Want To Enroll?")
+            student = self.selectDoc()
+            print("")
 
-        sect_set = set()
-        while(True):
+            # Get Section
+            print("Which Section Do You Want To Enroll in?\n")
+            section = CollManager.GetCollection("sections").selectDoc()
+            if section is None:
+                print("Aborting Enrollment..")
+                return
+
+            # Do we have a section with the same Course, Semester, Year
+            course_id = section["course"]
+            semester = section["semester"]
+            year = section["section_year"]
+            for sect in student["sections"]:
+                if course_id == sect["course"] and semester == sect["semester"] and year == sect["section_year"]:
+                    print("Sorry you can't enroll in multiple sections of the same course during the same semester!")
+                    return
+
+            try:
+                self.collection.update_one({"_id": student["_id"]}, {'$push': {'sections': section["_id"]}})
+                success = CollManager.GetCollection("sections").f_appendStudent(section["_id"], student["_id"])
+                if not success:
+                    raise Exception
+            except Exception as e:
+                print(f"\nError in {self.collName}: {str(e)}")
+                print("Failed to enroll in section\n")
+
             print("Add a section?")
             y_n_input = input("> ")
             while y_n_input != 'y' and y_n_input != 'n':
@@ -146,18 +215,35 @@ class StudentsCollection(CollectionBase):
             if y_n_input == 'n':
                 break
 
-            else:
-                doc = CollManager.GetCollection("sections").selectDoc()
-                if doc is not None:
-                    sect_set.add(ObjectId(doc["_id"]))
-        
-        sect_list = list(sect_set)
-        ret_list.append(("sections", sect_list))
+    def deleteEnrollment(self):
+        while (True):
+            # Get Student
+            print("Which Student Do You Want To Un-Enroll?")
+            student = self.selectDoc()
+            print("")
 
-        return ret_list
+            # Get Section
+            print("Which Section Do You Want To Un-Enroll from?\n")
+            section = CollManager.GetCollection("sections").selectDoc()
+            if section is None:
+                print("Aborting Enrollment..")
+                return
 
-    def orphanCleanUp(self, doc) -> bool:
-        return True
+            try:
+                self.collection.update_one({"_id": student["_id"]}, {"$pull": {"sections": section["_id"]}})
+                success = CollManager.GetCollection("sections").f_removeStudent(section["_id"], student["_id"])
+                if not success:
+                    raise Exception
+            except Exception as e:
+                print(f"\nError in {self.collName}: {str(e)}")
+                print("Failed to un-enroll in section\n")
 
-    def onValidInsert(self, doc_id):
-        pass
+            print("Remove an enrollment?")
+            y_n_input = input("> ")
+            while y_n_input != 'y' and y_n_input != 'n':
+                print("\nPlease only enter either 'y' or 'n'")
+                y_n_input = input("> ")
+            print("")
+
+            if y_n_input == 'n':
+                break

@@ -2,7 +2,7 @@ import pymongo
 from pprint import pprint
 from abc import ABC, abstractmethod
 from enum import Enum
-from datetime import time
+from datetime import datetime
 from typing import Tuple, Any, List
 
 from CollManager import CollManager
@@ -101,7 +101,7 @@ class CollectionBase(ABC):
                         case AttrType.TIME:
                             hour = int(input(f"Requires:\n{str(self.schema['$jsonSchema']['properties'][attr[0]])}\nInput Hour(Int 0-23) for {attr[0]} --> "))
                             minutes = int(input(f"Input Minutes(Int 0-59) for {attr[0]} --> "))
-                            new_doc[attr[0]] = time(hour, minutes)
+                            new_doc[attr[0]] = datetime(2000, 1, 1, hour, minutes, 0)
                         case _:
                             # Error checking
                             if not isinstance(attr[1], AttrType):
@@ -219,7 +219,7 @@ class CollectionBase(ABC):
                     case AttrType.TIME:
                         hour = int(input(f"Input Hour(Int 0-23) for {attr[0]} --> "))
                         minutes = int(input(f"Input Minutes(Int 0-59) for {attr[0]} --> "))
-                        doc_filter[attr[0]] = time(hour, minutes)
+                        doc_filter[attr[0]] = datetime(2000, 1, 1, hour, minutes, 0)
                     case _:
                         # Error checking
                         if not isinstance(attr[1], AttrType):
