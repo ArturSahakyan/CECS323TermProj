@@ -63,7 +63,7 @@ class StudentsCollection(CollectionBase):
         valid_majors_set = set()
         for dept in dept_list:
             for major in dept['majors']:
-                valid_majors.add(major['name'])
+                valid_majors_set.add(major['name'])
         valid_majors = list(valid_majors_set)
         major_set = set()
 
@@ -121,8 +121,6 @@ class StudentsCollection(CollectionBase):
         ret_list.append(("sections", sect_list))
 
         return ret_list
-
-        return []
 
     def orphanCleanUp(self, doc) -> bool:
         return True

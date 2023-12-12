@@ -139,7 +139,10 @@ class CollectionBase(ABC):
             return
 
         # Can't Leave Parent-less Children!!
-        self.orphanCleanUp(old_doc)
+        success = self.orphanCleanUp(old_doc)
+        if not success:
+            print(f"Orphan CleanUp Failed in {self.collName} collection!")
+            return
 
         # Continue With Deletion :D
         deleted = self.collection.delete_one({"_id": old_doc["_id"]})
@@ -155,6 +158,9 @@ class CollectionBase(ABC):
         for doc in doc_list:
             pprint(doc)
         return doc_list
+
+    def getAll(self) -> List:
+        return self.collection.find({})
 
     def selectDoc(self) -> {}:
         new_doc = None

@@ -3,8 +3,8 @@ from CollectionBase import CollectionBase, AttrType
 from CollManager import CollManager
 from bson.objectid import ObjectId
 
-class DepartmentsCollection(CollectionBase):
 
+class DepartmentsCollection(CollectionBase):
     """
         Base Class Will Call All of These Functions When Necessary
         No Need to Call Any of These Manually :D
@@ -41,7 +41,7 @@ class DepartmentsCollection(CollectionBase):
                     },
                     "chair_name": {
                         "bsonType": "string",
-                        "maxLength":  80,
+                        "maxLength": 80,
                         "description": "Name of the head of the department"
                     },
                     "description": {
@@ -97,24 +97,23 @@ class DepartmentsCollection(CollectionBase):
                 print("\nWhat's the description of that major?")
                 maj_desc = input("> ")
 
-                maj_list.append({"name":maj_name, "description":maj_desc})
+                maj_list.append({"name": maj_name, "description": maj_desc})
                 print("")
 
         return [("majors", maj_list)]
 
     def orphanCleanUp(self, doc) -> bool:
 
-        # students_coll = CollManager.GetCollection("students")
-        
-        course_coll = CollManager.GetCollection("courses")
-        courses_cnt = course_coll.count_documents({"department": ObjectID(doc["_id"])})
-        
-        if courses.cnt > 0:
+        course_coll = CollManager.GetCollection("courses").collection
+        courses_cnt = course_coll.count_documents({"department": ObjectId(doc["_id"])})
+        students_coll = CollManager.GetCollection("students").collection
+
+        if courses_cnt > 0:
             print(f"{courses_cnt} courses belonging to this department must be deleted first.")
             return False
-        
+
         for major in doc["majors"]:
-            if(students_coll.count_documents({"majors.name": {"$in":[major["name"]]}}) > 0):  # I'm VERY iffy about this
+            if students_coll.count_documents({"majors.name": {"$in": [major["name"]]}}) > 0:  # I'm VERY iffy about this
                 print("There are majors that belong to this department.")
                 print("Delete these majors? The deleted Majors will also be removed")
                 print("from any students who have declared those Majors [y/n]")
@@ -133,23 +132,23 @@ class DepartmentsCollection(CollectionBase):
                         students_coll.update_many({"majors": {"$pull":[major["name"]]}})
                 """
         return True
-    
+
     def addMajor(self):
         print("Select a department to add the major to.\n")
         doc = self.selectDoc()
-        
+
         new_maj = {}
 
-        while(True):
-            while(True):
+        while True:
+            while True:
                 new_maj_name = input("Enter a name for the major --> ")
-                major_count = self.collection.count_documents({"majors.name": {"$in":[new_maj_name]}})
-                if(major_count > 0):
+                major_count = self.collection.count_documents({"majors.name": {"$in": [new_maj_name]}})
+                if major_count > 0:
                     print("\nA major with that name already exists. Try again.\n")
                 else:
                     new_maj_desc = input("Enter a description for the major --> ")
                     break
-            
+
             try:
                 new_maj['name'] = new_maj_name
                 new_maj['description'] = new_maj_desc
@@ -159,7 +158,7 @@ class DepartmentsCollection(CollectionBase):
                 return
 
             except Exception as e:
-                print(f"\nError in {self.collName}: {str(e)}") # Print Error
+                print(f"\nError in {self.collName}: {str(e)}")  # Print Error
                 new_maj = {}
 
                 # Ask to Try Again
@@ -178,12 +177,12 @@ class DepartmentsCollection(CollectionBase):
                     continue
 
     def deleteMajor(self):
-        
-        # students_coll = CollManager.GetCollection("students")
+
+        students_coll = CollManager.GetCollection("students")
 
         major_to_del = input("Name of the major to delete --> ")
-        
-        if self.collection.count_documents({"majors.name": {"$in":[major_to_del]}}) == 0:
+
+        if self.collection.count_documents({"majors.name": {"$in": [major_to_del]}}) == 0:
             print("No majors with that name.")
             return
         """
@@ -195,11 +194,11 @@ class DepartmentsCollection(CollectionBase):
         
         # else:
         """
-        self.collection.update_one({}, {"$pull": {"majors": {"name": {"$in":[major_to_del]}}}})
+        self.collection.update_one({}, {"$pull": {"majors": {"name": {"$in": [major_to_del]}}}})
         print(f"{major_to_del} deleted.")
 
     def listMajors(self):
-        all_depts = self.collection.find({})
+        all_depts = self.getAll()
         for dept in all_depts:
             print(dept["name"])
             print()

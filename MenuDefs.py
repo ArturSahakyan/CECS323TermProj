@@ -37,6 +37,6 @@ menu_delete = Menu('delete', 'Please Select Which Collection to Delete From:', [
     Option("Departments", "CollManager.GetCollection('departments').deleteDoc()"),
     Option("Majors", "CollManager.GetCollection('departments').deleteMajor()"),
     Option("Students", "CollManager.GetCollection('students').deleteDoc()"),
-    Option("Courses', CollManager.GetCollection('courses').deleteDoc()"),
+    Option("Courses", "CollManager.GetCollection('courses').deleteDoc()"),
     Option("Exit", "pass")
 ])
