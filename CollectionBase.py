@@ -34,6 +34,10 @@ class CollectionBase(ABC):
             -   orphanCleanUp(self, doc)
                     This is where you clean up any relationships created from uniqueAttrAdds Upon Deletion
                     Leave No Child Left Behind!!!
+
+            -   onValidInsert(self, doc_id)
+                    This gets called once a document is inserted and it's valid.
+                    Use this if you need to do anything immediately after creation
     """
 
     def __init__(self, db):
