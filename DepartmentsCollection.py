@@ -110,9 +110,7 @@ class DepartmentsCollection(CollectionBase):
         return [("majors", maj_list)]
 
     def orphanCleanUp(self, doc) -> bool:
-
-        course_coll = CollManager.GetCollection("courses").collection
-        courses_cnt = course_coll.count_documents({"department": ObjectId(doc["_id"])})
+        courses_cnt = len(doc["courses"])
         students_coll = CollManager.GetCollection("students").collection
 
         if courses_cnt > 0:
