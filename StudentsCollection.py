@@ -1,3 +1,4 @@
+from pprint import pprint
 from typing import List, Tuple, Any
 from CollectionBase import CollectionBase, AttrType
 from SectionsCollection import SectionsCollection
@@ -93,16 +94,15 @@ class StudentsCollection(CollectionBase):
                                                     "description": "The date on which the student applies to a section as PassFail"
                                                 }
                                             }
-
                                         }
                                     ]
                                 }
                             }
                         }
                     }
-                    }
                 }
             }
+        }
 
         self.attributes = [("last_name", AttrType.STRING), ("first_name", AttrType.STRING),
                            ("email", AttrType.STRING), ("majors", AttrType.FOREIGN_ARR),
@@ -198,6 +198,12 @@ class StudentsCollection(CollectionBase):
             print(f"\nError in {self.collName}: {str(e)}")
             print("Failed to remove major from student")
 
+    def listStudentMajors(self):
+        for stu in self.collection.find({}):
+            print("Student: ", stu["first_name"], stu["last_name"], " has majors:")
+            for maj in stu["majors"]:
+                pprint(maj)
+
     """ ****************** Enrollment Functionality ************************* """
     def addEnrollment(self):
         while (True):
@@ -232,8 +238,8 @@ class StudentsCollection(CollectionBase):
                 user_inp = input("Try Again. > ")
             if user_inp == "1":
                 # Is PassFail
-                prop_type = "LetterGrade"
-                prop_name = "min_satisfactory"
+                prop_type = "PassFail"
+                prop_name = "application_date"
                 while True:
                     try:
                         app_year = int(input("Application year --> "))
@@ -245,8 +251,8 @@ class StudentsCollection(CollectionBase):
                     except:
                         print("Invalid entry. Try again.\n")
             else:
-                prop_type = "PassFail"
-                prop_name = "application_date"
+                prop_type = "LetterGrade"
+                prop_name = "min_satisfactory"
                 valid_letters = ['A', 'B', 'C']
                 print("Please Select A Minimum Satisfactory Grade From: ", valid_letters)
                 user_inp = input("> ")
@@ -306,3 +312,9 @@ class StudentsCollection(CollectionBase):
 
             if y_n_input == 'n':
                 break
+
+    def listEnrollments(self):
+        for stu in self.collection.find({}):
+            print("Student: ", stu["first_name"], stu["last_name"], " has majors:")
+            for enr in stu["sections"]:
+                pprint(enr)
