@@ -117,25 +117,12 @@ class DepartmentsCollection(CollectionBase):
             print(f"{courses_cnt} courses belonging to this department must be deleted first.")
             return False
 
-        for major in doc["majors"]:
-            if students_coll.count_documents({"majors.name": {"$in": [major["name"]]}}) > 0:  # I'm VERY iffy about this
-                print("There are majors that belong to this department.")
-                print("Delete these majors? The deleted Majors will also be removed")
-                print("from any students who have declared those Majors [y/n]")
-                user_inp = input("> ")
-                while user_inp != 'y' and user_inp != 'n':
-                    print("\nPlease Only Enter Either 'y' or 'n'")
-                    user_inp = input("> ")
-                print("")
+        majors_cnt = len(doc["majors"])
 
-                # Break Loop if User Doesn't Want to Try Again
-                if user_inp == 'n':
-                    return False
-                """
-                else:
-                    for major in doc["majors"]:
-                        students_coll.update_many({"majors": {"$pull":[major["name"]]}})
-                """
+        if majors_cnt > 0:
+            print(f"{majors_cnt} majors belonging to this department must be deleted first.")
+            return False
+
         return True
 
     def onValidInsert(self, doc_id):

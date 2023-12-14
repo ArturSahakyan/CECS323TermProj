@@ -113,6 +113,11 @@ class StudentsCollection(CollectionBase):
         return [("majors", []), ("sections", [])]
 
     def orphanCleanUp(self, doc) -> bool:
+        for sect in doc["sections"]:
+            section = sect["section_id"]
+            if not CollManager.GetCollection("sections").f_removeStudent(section, doc["_id"]):
+                return False
+        
         return True
 
     def onValidInsert(self, doc_id):
@@ -315,6 +320,6 @@ class StudentsCollection(CollectionBase):
 
     def listEnrollments(self):
         for stu in self.collection.find({}):
-            print("Student: ", stu["first_name"], stu["last_name"], " has majors:")
+            print("Student:", stu["first_name"], stu["last_name"], "has enrollments:")
             for enr in stu["sections"]:
                 pprint(enr)
