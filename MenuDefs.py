@@ -15,6 +15,9 @@ menu_add = Menu('add', 'Please Select Which Collection To Add To:', [
     Option("Majors", "CollManager.GetCollection('departments').addMajor()"),
     Option("Students", "CollManager.GetCollection('students').addDoc()"),
     Option("Courses", "CollManager.GetCollection('courses').addDoc()"),
+    Option("Sections", "CollManager.GetCollection('sections').addDoc()"),
+    Option("StudentMajors", "CollManager.GetCollection('students').addMajor()"),
+    Option("Enrollments", "CollManager.GetCollection('students').addEnrollment()"),
     Option("Exit", "pass")
 ])
 
@@ -22,6 +25,7 @@ menu_select = Menu('select', 'Please Select Which Collection to Select From:', [
     Option("Departments", "pprint(CollManager.GetCollection('departments').selectDoc())"),
     Option("Students", "pprint(CollManager.GetCollection('students').selectDoc())"),
     Option("Courses", "pprint(CollManager.GetCollection('courses').selectDoc())"),
+    Option("Sections", "CollManager.GetCollection('sections').selectDoc()"),
     Option("Exit", "pass")
 ])
 
@@ -30,6 +34,9 @@ menu_list = Menu('list', 'Please Select Which Collection to List:', [
     Option("Majors", "CollManager.GetCollection('departments').listMajors()"),
     Option("Students", "CollManager.GetCollection('students').listAll()"),
     Option("Courses", "CollManager.GetCollection('courses').listAll()"),
+    Option("Sections", "CollManager.GetCollection('sections').listAll()"),
+    Option("StudentMajors", "CollManager.GetCollection('students').listStudentMajors()"),
+    Option("Enrollments", "CollManager.GetCollection('students').listEnrollments()"),
     Option("Exit", "pass")
 ])
 
@@ -38,5 +45,8 @@ menu_delete = Menu('delete', 'Please Select Which Collection to Delete From:', [
     Option("Majors", "CollManager.GetCollection('departments').deleteMajor()"),
     Option("Students", "CollManager.GetCollection('students').deleteDoc()"),
     Option("Courses", "CollManager.GetCollection('courses').deleteDoc()"),
+    Option("Sections", "CollManager.GetCollection('sections').deleteDoc()"),
+    Option("StudentMajors", "CollManager.GetCollection('students').deleteMajor()"),
+    Option("Enrollments", "CollManager.GetCollection('students').deleteEnrollment()"),
     Option("Exit", "pass")
 ])
