@@ -80,7 +80,7 @@ class SectionsCollection(CollectionBase):
         # to be enforced here... it seems like more of an Enrollment thing?
 
     def uniqueAttrAdds(self) -> List[Tuple[str, Any]]:
-        return []  # Return Empty Array Since a Return Value is Expected
+        return [("students", [])]  # Return Empty Array Since a Return Value is Expected
 
     def orphanCleanUp(self, doc) -> bool:
         students_cnt = len(doc["students"])
