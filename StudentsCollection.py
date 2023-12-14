@@ -60,24 +60,49 @@ class StudentsCollection(CollectionBase):
                             "required": ["section_id", "enrollment"],
                             "properties": {
                                 "section_id": {
-                                    "bsonType": "string",
-                                    "minLength": 5,
-                                    "maxLength": 50,
-                                    "description": "Name of the major"
+                                    "bsonType": "objectId",
+                                    "description": "Section ID"
                                 },
 
                                 "enrollment": {
                                     "oneOf": [
-                                        { "bsonType": "date", "description": "PassFail: applicationDate" },
-                                        { "bsonType": "string", "enum": ["A", "B", "C"], "description": "LetterGrade: minSatisfactory" }
+                                        {
+                                            "bsonType": "object",
+                                            "required": ["type", "min_satisfactory"],
+                                            "properties": {
+                                                "type": {
+                                                    "enum": ["LetterGrade"],
+                                                    "description": "LetterGrade type"
+                                                },
+                                                "min_satisfactory": {
+                                                    "enum": ["A", "B", "C"],
+                                                    "description": "Minimum satisfactory grade"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "bsonType": "object",
+                                            "required": ["type", "application_date"],
+                                            "properties": {
+                                                "type": {
+                                                    "enum": ["PassFail"],
+                                                    "description": "PassFail type"
+                                                },
+                                                "application_date": {
+                                                    "bsonType": "date",
+                                                    "description": "The date on which the student applies to a section as PassFail"
+                                                }
+                                            }
+
+                                        }
                                     ]
                                 }
                             }
                         }
                     }
+                    }
                 }
             }
-        }
 
         self.attributes = [("last_name", AttrType.STRING), ("first_name", AttrType.STRING),
                            ("email", AttrType.STRING), ("majors", AttrType.FOREIGN_ARR),
@@ -85,7 +110,7 @@ class StudentsCollection(CollectionBase):
         self.uniqueCombos = [[0, 1], [2]]  # Candidate Keys
 
     def uniqueAttrAdds(self) -> List[Tuple[str, Any]]:
-        return []
+        return [("majors", []), ("sections", [])]
 
     def orphanCleanUp(self, doc) -> bool:
         return True
@@ -135,11 +160,12 @@ class StudentsCollection(CollectionBase):
 
             try:
                 self.collection.update_one({"_id": student["_id"]}, {'$push': {'majors': {"name": maj_name, "declaration_date": dec_date}}})
+                print("Success!!\n")
             except Exception as e:
                 print(f"\nError in {self.collName}: {str(e)}")
                 print("Failed to add StudentMajor\n")
 
-            print("Add a major?")
+            print("Add another major?[y/n]")
             y_n_input = input("> ")
             while y_n_input != 'y' and y_n_input != 'n':
                 print("\nPlease only enter either 'y' or 'n'")
@@ -191,13 +217,46 @@ class StudentsCollection(CollectionBase):
             course_id = section["course"]
             semester = section["semester"]
             year = section["section_year"]
-            for sect in student["sections"]:
+            for sect_obj in student["sections"]:
+                sect = CollManager.GetCollection("sections").collection.find_one({"_id": sect_obj["section_id"]})
                 if course_id == sect["course"] and semester == sect["semester"] and year == sect["section_year"]:
                     print("Sorry you can't enroll in multiple sections of the same course during the same semester!")
                     return
 
+            enrollment = None
+            prop_name = ""
+            prop_type = ""
+            print("\nEnroll with PassFail or LetterGrade?\n\t1. PassFail\n\t2. LetterGrade")
+            user_inp = input("> ")
+            while user_inp != "1" and user_inp != "2":
+                user_inp = input("Try Again. > ")
+            if user_inp == "1":
+                # Is PassFail
+                prop_type = "LetterGrade"
+                prop_name = "min_satisfactory"
+                while True:
+                    try:
+                        app_year = int(input("Application year --> "))
+                        app_month = int(input("Application month (digit) --> "))
+                        app_day = int(input("Application day (digit) --> "))
+                        print()
+                        enrollment = datetime(app_year, app_month, app_day)
+                        break
+                    except:
+                        print("Invalid entry. Try again.\n")
+            else:
+                prop_type = "PassFail"
+                prop_name = "application_date"
+                valid_letters = ['A', 'B', 'C']
+                print("Please Select A Minimum Satisfactory Grade From: ", valid_letters)
+                user_inp = input("> ")
+                while user_inp not in valid_letters:
+                    print("\nPlease Input a Valid Grade")
+                    user_inp = input("> ")
+                enrollment = user_inp
+
             try:
-                self.collection.update_one({"_id": student["_id"]}, {'$push': {'sections': section["_id"]}})
+                self.collection.update_one({"_id": student["_id"]}, {'$push': {'sections': {"section_id":section["_id"], "enrollment": {"type": prop_type, prop_name:enrollment}}}})
                 success = CollManager.GetCollection("sections").f_appendStudent(section["_id"], student["_id"])
                 if not success:
                     raise Exception
@@ -205,7 +264,7 @@ class StudentsCollection(CollectionBase):
                 print(f"\nError in {self.collName}: {str(e)}")
                 print("Failed to enroll in section\n")
 
-            print("Add a section?")
+            print("Add another Enrollment? [y/n]")
             y_n_input = input("> ")
             while y_n_input != 'y' and y_n_input != 'n':
                 print("\nPlease only enter either 'y' or 'n'")
@@ -230,7 +289,7 @@ class StudentsCollection(CollectionBase):
                 return
 
             try:
-                self.collection.update_one({"_id": student["_id"]}, {"$pull": {"sections": section["_id"]}})
+                self.collection.update_one({"_id": student["_id"]}, {"$pull": {"sections": {"section_id":section["_id"]}}})
                 success = CollManager.GetCollection("sections").f_removeStudent(section["_id"], student["_id"])
                 if not success:
                     raise Exception
